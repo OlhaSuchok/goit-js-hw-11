@@ -6,12 +6,13 @@ export default class ApiService {
 
   fetchArticles() {
     console.log(this);
-    const url = `https://pixabay.com/api/?key=31897443-8d2d373622bb59a1b3cd97685&q=${this.searchQuery}&image_type=photo&per_page=40&page=${this.page}`;
+    const url = `https://pixabay.com/api/?key=31897443-8d2d373622bb59a1b3cd97685&q=${this.searchQuery}&image_type=photo&per_page=40&page=${this.page}&orientation=horizontal&safesearch=true`;
 
-    fetch(url)
+    return fetch(url)
       .then(response => response.json())
       .then(data => {
         this.incrementPage();
+        return data;
       });
   }
 

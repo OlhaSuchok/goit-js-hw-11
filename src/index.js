@@ -3,6 +3,7 @@ import ApiService from './api-service';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+let galleryItem = new SimpleLightbox('.gallery a');
 
 const searchForm = document.querySelector('.search-form');
 const inputEl = document.querySelector('input[name="searchQuery"]');
@@ -10,7 +11,6 @@ const searchButton = document.querySelector('button[type="submit"]');
 const loadMoreButton = document.querySelector('button[type="button"]');
 const imageWrapper = document.querySelector('.gallery');
 loadMoreButton.classList.add('hide');
-let galleryItem = new SimpleLightbox('.gallery a');
 
 searchForm.addEventListener('submit', onSearch);
 loadMoreButton.addEventListener('click', onLoadMore);
@@ -18,36 +18,58 @@ loadMoreButton.addEventListener('click', onLoadMore);
 const apiService = new ApiService();
 console.log(apiService);
 
-function onSearch(event) {
+async function onSearch(event) {
   event.preventDefault();
   clearArticlesContainer();
   apiService.resetPage();
   apiService.query = event.currentTarget.elements.searchQuery.value;
 
   if (apiService.query === '') {
+    loadMoreButton.classList.add('hide');
     return;
   }
 
-  apiService.fetchArticles().then(hits => {
-    oncreateMarkup(hits);
+  const {
+    data: { hits },
+  } = await apiService.fetchArticles();
+  oncreateMarkup(hits);
 
-    console.log(hits);
-    console.log(hits.length);
-    console.log(hits.totalHits);
+  apiService.incrementPage();
 
-    if (hits.length === 0) {
-      Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-      return;
-    }
-  });
+  if (hits.length === 0) {
+    loadMoreButton.classList.add('hide');
+    Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+    return;
+  }
+
+  const {
+    data: { totalHits },
+  } = await apiService.fetchArticles();
+
+  Notify.success(`Hooray! We found ${totalHits} images.`);
 }
 
-function onLoadMore() {
-  apiService.fetchArticles().then(hits => {
-    oncreateMarkup(hits);
-  });
+async function onLoadMore() {
+  const quantity = apiService.incrementQuantity();
+  console.log(quantity);
+
+  const {
+    data: { totalHits },
+  } = await apiService.fetchArticles();
+  console.log(totalHits);
+
+  const {
+    data: { hits },
+  } = await apiService.fetchArticles();
+  oncreateMarkup(hits);
+
+  if (quantity > totalHits) {
+    loadMoreButton.classList.add('hide');
+    Notify.info("We're sorry, but you've reached the end of search results.");
+    return;
+  }
 }
 
 function oncreateMarkup(hits) {
@@ -75,8 +97,8 @@ function oncreateMarkup(hits) {
     })
     .join('');
   imageWrapper.insertAdjacentHTML('beforeend', markupArticles);
-  loadMoreButton.classList.remove('hide');
   galleryItem.refresh();
+  loadMoreButton.classList.remove('hide');
 }
 
 function clearArticlesContainer() {

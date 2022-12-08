@@ -5,7 +5,6 @@ export default class ApiService {
   }
 
   fetchArticles() {
-    this.incrementPage();
     const BASE_URL = 'https://pixabay.com/api';
     const API_KEY = '31897443-8d2d373622bb59a1b3cd97685';
     const url = `${BASE_URL}/?key=${API_KEY}&q=${this.searchQuery}&image_type=photo&per_page=40&page=${this.page}&orientation=horizontal&safesearch=true`;

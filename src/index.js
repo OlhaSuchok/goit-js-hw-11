@@ -21,19 +21,18 @@ console.log(apiService);
 function onSearch(event) {
   event.preventDefault();
   clearArticlesContainer();
+  apiService.resetPage();
   apiService.query = event.currentTarget.elements.searchQuery.value;
-  console.dir(apiService.query);
 
   if (apiService.query === '') {
     return;
   }
 
-  apiService.resetPage();
   apiService.fetchArticles().then(hits => {
-    console.log(hits);
     oncreateMarkup(hits);
-    console.log(hits.length);
+
     console.log(hits);
+    console.log(hits.length);
     console.log(hits.totalHits);
 
     if (hits.length === 0) {
@@ -75,7 +74,7 @@ function oncreateMarkup(hits) {
 </div>`;
     })
     .join('');
-  imageWrapper.insertAdjacentHTML('afterbegin', markupArticles);
+  imageWrapper.insertAdjacentHTML('beforeend', markupArticles);
   loadMoreButton.classList.remove('hide');
   galleryItem.refresh();
 }

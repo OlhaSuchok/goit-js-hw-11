@@ -30,11 +30,9 @@ async function onSearch(event) {
   }
 
   const {
-    data: { hits },
+    data: { hits, totalHits },
   } = await apiService.fetchArticles();
   oncreateMarkup(hits);
-
-  apiService.incrementPage();
 
   if (hits.length === 0) {
     loadMoreButton.classList.add('hide');
@@ -43,25 +41,15 @@ async function onSearch(event) {
     );
     return;
   }
-
-  const {
-    data: { totalHits },
-  } = await apiService.fetchArticles();
-
   Notify.success(`Hooray! We found ${totalHits} images.`);
 }
 
 async function onLoadMore() {
+  apiService.incrementPage();
   const quantity = apiService.incrementQuantity();
-  console.log(quantity);
 
   const {
-    data: { totalHits },
-  } = await apiService.fetchArticles();
-  console.log(totalHits);
-
-  const {
-    data: { hits },
+    data: { hits, totalHits },
   } = await apiService.fetchArticles();
   oncreateMarkup(hits);
 
